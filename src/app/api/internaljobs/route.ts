@@ -14,7 +14,9 @@ import {
   addToMemoryAgent,
   searchMemoryAgent,
   Agent,
+  verifyApiKey,
 } from '@/lib/utils';
+import { CloudWatchEventsClient, DeleteRuleCommand } from '@aws-sdk/client-cloudwatch-events';
 
 // Initialize the CORS middleware
 const cors = Cors({
@@ -114,10 +116,45 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
                 body: JSON.stringify({ success: true }),
             })
         } catch (error) {
-            console.error('Internal Jobs API Route Error:', error);
+            console.error('Internal Jobs POST API Route Error:', error);
             return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
         }
     } else {
         return NextResponse.json({ error: `Method ${req.method} Not Allowed` }, { status: 405 });
+    }
+}
+
+export const DELETE = async (req: NextRequest, res: NextResponse) => {
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
+
+    if (req.method === 'DELETE'){
+        try {
+            let { ak, jobID } = await req.json();
+
+            if (!verifyApiKey(ak)) {
+                return {
+                    statusCode: 401,
+                    body: JSON.stringify({ error: 'Unauthorized' }),
+                }
+            }
+
+            const cloudWatchClient = new CloudWatchEventsClient({ region: 'us-east-1' });
+
+
+            await cloudWatchClient.send(new DeleteRuleCommand({
+                Name:  `GENESISSCRON_${jobID}`,
+                Force: true
+            }));
+
+            return NextResponse.json({
+                statusCode: 200,
+                body: JSON.stringify({ jobID: jobID, success: true }),
+            })
+
+        } catch (error) {
+            console.error('Internal Jobs DELETE API Route Error:', error);
+            return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        }
     }
 }
