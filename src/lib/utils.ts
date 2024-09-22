@@ -169,50 +169,6 @@ export interface JobRequestResponse {
     jobID: string,
     brainID: string,
 }
-export async function jobs(event: APIGatewayProxyEvent){
-    try {
-        
-        const body = JSON.parse(event.body);
-
-        let { ak, agents, schedule, callbackUrl, state, brainID }: JobRequest = body;
-
-        if (!ak || !agents || !schedule) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            }
-        }
-
-        if(!await verifyApiKey(ak)){
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-        
-
-        try {
-            let {jobID, cronBrainID} = await deployCronAgents(ak,agents, schedule, callbackUrl, state, brainID)
-
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ jobID:jobID, brainID: cronBrainID }),
-            }
-        } catch (error) {
-            return {
-                statusCode: 500,
-                body: JSON.stringify({ error: 'Internal Server Error', details: error.message }),
-            }
-        }
-
-    } catch (error) {
-        return {
-            statusCode: 500,
-            // body: JSON.stringify({ error: 'Internal Server Error', details: error.message }),
-            body: JSON.stringify({ error: 'Internal Server Error' }),
-        };
-    }
-}
 
 
 // ██╗███╗░░██╗████████╗███████╗██████╗░███╗░░██╗░█████╗░██╗░░░░░  ░░░░░██╗░█████╗░██████╗░░██████╗
