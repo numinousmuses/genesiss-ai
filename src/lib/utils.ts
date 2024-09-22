@@ -397,62 +397,6 @@ export interface OCRImageResponse{
     text: string;
 }
 
-export async function ocrimage(event: APIGatewayProxyEvent){
-    try {
-        
-        const body = JSON.parse(event.body);
-
-        let { ak, imageURL } = body as OCRImageRequest;
-
-        if (!ak || !imageURL ) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            }
-        }
-
-        if(!await verifyApiKey(ak)){
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-
-        const replicate = new Replicate({
-            auth: Resource.ReplicateAPIKey.value,
-          });
-        
-        export interface GenericO {
-            output?: string;
-            [key: string]: any; // Allow additional properties
-        }
-
-        const output: GenericO = await replicate.run(
-            "abiruyt/text-extract-ocr:a524caeaa23495bc9edc805ab08ab5fe943afd3febed884a4f3747aa32e9cd61",
-            {
-              input: {
-                image: imageURL
-              }
-            }
-          );
-        
-        const text = output.output
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ text: text }),
-        }
-
-          
-          
-    } catch (error) {
-        console.error("OCRImage Endpoint error: " + JSON.stringify(error, null, 2))
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Internal Server Error' }),
-        }
-    }
-}
 
 
 // ██╗███╗░░░███╗░█████╗░░██████╗░███████╗░██████╗░███████╗███╗░░██╗
@@ -1223,7 +1167,7 @@ export async function deployCronAgents (ak: string, agents: Agent[][], schedule:
 
         // deploy cron lambda
 
-        const apiUrl = getApiUrl('/internaljobs');
+        const apiUrl = getApiUrl('/api/internaljobs');
         const roleArn = Resource.RTRoleArn.value; 
 
         const functionCode = Buffer.from(`
