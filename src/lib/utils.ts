@@ -374,44 +374,6 @@ export interface DocuGenResponse{
     documentURL: string;
 }
 
-export async function docugen(event: APIGatewayProxyEvent){
-    try {
-        
-        const body = JSON.parse(event.body);
-
-        let { ak, prompt } = body as DocuGenRequest;
-
-        if (!ak || !prompt ) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            }
-        }
-
-        if(!await verifyApiKey(ak)){
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-
-        const response = await documentGenerationAgent(prompt)
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ documentURL: response }),
-        };
-
-    } catch (error) {
-        console.error("DocuGen Endpoint error: " + JSON.stringify(error, null, 2))
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Internal Server Error' }),
-        }
-    }
-}
-
-
 // ░█████╗░░█████╗░██████╗░██╗███╗░░░███╗░█████╗░░██████╗░███████╗
 // ██╔══██╗██╔══██╗██╔══██╗██║████╗░████║██╔══██╗██╔════╝░██╔════╝
 // ██║░░██║██║░░╚═╝██████╔╝██║██╔████╔██║███████║██║░░██╗░█████╗░░
