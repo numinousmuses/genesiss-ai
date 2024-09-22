@@ -3,22 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "next dev",
+    "lint": "next lint",
+    "start": "next start"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudwatch-events": "^3.654.0",
+    "markdown-it": "^14.1.0",
+    "next": "14.2.13",
+    "pdfkit": "^0.15.0",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.13"
+    "sst": "3.1.32",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@types/markdown-it": "^14.1.2",
     "@types/node": "^20",
+    "@types/pdfkit": "^0.13.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/uuid": "^10.0.0",
     "eslint": "^8",
-    "eslint-config-next": "14.2.13"
+    "eslint-config-next": "14.2.13",
+    "typescript": "^5"
   }
 }
