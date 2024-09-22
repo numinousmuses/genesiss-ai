@@ -424,43 +424,6 @@ export interface ImageGenResponse{
     imageeURL: string
 }
 
-export async function imagegen(event: APIGatewayProxyEvent){
-    try {
-        
-        const body = JSON.parse(event.body);
-
-        const { ak, prompt, height, width } = body as ImageGenRequest;
-
-        if (!ak || !prompt) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            };
-        }
-
-        if (!await verifyApiKey(ak)) {
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-
-        const res = await imageGenerationAgent(prompt, height, width)
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ imageeURL: res }),
-        }
-
-    } catch (error) {
-        console.error("ImageGen Endpoint error: " + JSON.stringify(error, null, 2))
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Internal Server Error' }),
-        }
-    }
-}
-
 // example search memory call
 // {
 //     "query": "What is the capital of France?",
@@ -599,7 +562,7 @@ export async function searchMemory(query: string, metadata: Record<string, any>,
         };
 
         if (excludeMetadata) {
-            queryParams["exclude"] = excludeMetadata;
+            (queryParams as { [key: string]: any })["exclude"] = excludeMetadata;
         }
 
         const qresult = await client.query(queryParams);
@@ -607,7 +570,7 @@ export async function searchMemory(query: string, metadata: Record<string, any>,
         for (const res of qresult.results) {
             const url = res.metadata.contentS3
             const key = extractKeyFromS3Url(url)
-            const strres = retrieveFromS3(key)
+            const strres = retrieveFromS3(key!)
 
             results += `A RETRIEVED MEMORY::\n${JSON.stringify(strres)}\n\n`;
         }
@@ -639,7 +602,7 @@ export async function searchMemoryAdvanced(query: string, metadata: Record<strin
 
     const client = VectorClient("GenesissVectorDB");
 
-    let results: QueryResult[]
+    let results: QueryResult[] = []
 
     const embeddings = await generateEmbeddings(query);
 
@@ -652,7 +615,7 @@ export async function searchMemoryAdvanced(query: string, metadata: Record<strin
         };
 
         if (excludeMetadata) {
-            queryParams["exclude"] = excludeMetadata;
+            (queryParams as { [key: string]: any })["exclude"] = excludeMetadata;
         }
 
         if (extraParams) {
@@ -664,11 +627,11 @@ export async function searchMemoryAdvanced(query: string, metadata: Record<strin
         for (const res of qresult.results) {
             const url = res.metadata.contentS3
             const key = extractKeyFromS3Url(url)
-            const strres = await retrieveFromS3(key)
+            const strres = await retrieveFromS3(key!)
 
             const {contentS3, brainID, ak, ...newMetadata} = res.metadata
 
-            export interface specificMetadata {
+            interface specificMetadata {
                 brainID: string;
                 memoryID: string;
                 content: string;
@@ -1272,7 +1235,7 @@ export async function internetChatAgent(prompt: string): Promise<string>{
 
     const oldllmPrompt = prompt;
     let llmPrompt = 
-`BEGIN SYSTEM PROMPT: For the following prompt, generate a list of internet queries that would aid in answering the prompt. Construct good, specific questions because you aren't allowed to answer without citing sources. The current date is ${ new Date().toDatestring }. Your response should be formatted like the following JSON (but make sure your JSON is stringified):
+`BEGIN SYSTEM PROMPT: For the following prompt, generate a list of internet queries that would aid in answering the prompt. Construct good, specific questions because you aren't allowed to answer without citing sources. The current date is ${ new Date().toDateString }. Your response should be formatted like the following JSON (but make sure your JSON is stringified):
     {
         "queries": [
             "query 1",
@@ -1324,7 +1287,7 @@ export async function proChatAgent(prompt: string): Promise<string>{
 
     const oldllmPrompt = prompt;
     let llmPrompt = 
-`BEGIN SYSTEM PROMPT: For the following prompt, generate a list of internet queries that would aid in answering the prompt. Construct good, specific questions because you aren't allowed to answer without citing sources. The current date is ${ new Date().toDatestring }. Your response should be formatted like the following JSON (but make sure your JSON is stringified):
+`BEGIN SYSTEM PROMPT: For the following prompt, generate a list of internet queries that would aid in answering the prompt. Construct good, specific questions because you aren't allowed to answer without citing sources. The current date is ${ new Date().toDateString }. Your response should be formatted like the following JSON (but make sure your JSON is stringified):
     {
         "queries": [
             "query 1",
