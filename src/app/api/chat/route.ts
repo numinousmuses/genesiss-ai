@@ -57,9 +57,8 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     await runMiddleware(req, res, cors);
 
     if (req.method === 'POST') {
+      
         let { ak, message, internet, format, chatID, brainID, images, documents } = await req.json();
-        
-        
 
         try {
             
