@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import Cors from 'cors';
 import { 
@@ -7,29 +8,25 @@ import {
   searchMemoryAdvanced,
   deleteMemory
 } from '@/lib/utils';
-// Initialize the CORS middleware
-const cors = Cors({
-    methods: ['POST'],
-    origin: '*', // Allow all origins (adjust as necessary for your security needs)
-    allowedHeaders: ['x-api-key', 'Content-Type'],
-  });
 
-  // Helper method to run middleware
-async function runMiddleware(req: NextRequest, res: NextResponse, fn: Function) {
-    return new Promise((resolve, reject) => {
-      fn(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        return resolve(result);
-      });
-    });
+function handleCors(req: NextRequest) {
+    const headers = new Headers();
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  
+    // Respond to preflight requests with 200 status
+    if (req.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 204, headers });
+    }
+  
+    return headers;
   }
 
 export const POST = async (req: NextRequest, res: NextResponse) => {
-    // Run CORS middleware
-    await runMiddleware(req, res, cors);
-
+    
+    const headers = handleCors(req);
+    
     if (req.method === 'POST'){
         try {
             
@@ -206,7 +203,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
                         let iterator = 0
                         
                         
-                        let results: QueryResult[][]
+                        let results: QueryResult[][] =[]
                         let tempres: QueryResult[]
                         
                         for (let brainIDs of brainID) {
@@ -247,9 +244,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
                                 
     
                             } else if (excludeMetadata[iterator]) {
-    
-                                let results
-    
+        
                                 if(numResults[iterator] && threshold[iterator]) {
                                     tempres = await searchMemoryAdvanced(query, queryMetadata, excludeMetadata[iterator], { count: numResults[iterator], threshold: threshold[iterator] })
                                     results.push(tempres)
@@ -277,7 +272,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
                     } else if (brainID.length == 1) {
                         let iterator = 0
     
-                        let results: QueryResult[][]
+                        let results: QueryResult[][] = []
                         let tempRes: QueryResult[]
     
                         for (let query of content) {

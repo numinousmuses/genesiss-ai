@@ -1,6 +1,6 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { Resource } from "sst";
-import Cors from 'cors';
 import { 
   searchMemory,
   addToMemory,
@@ -14,30 +14,26 @@ import {
   addToMemoryAgent,
   searchMemoryAgent,
   Agent,
+  CalledAgent
 } from '@/lib/utils';
 
-// Initialize the CORS middleware
-const cors = Cors({
-    methods: ['POST'],
-    origin: '*', // Allow all origins (adjust as necessary for your security needs)
-    allowedHeaders: ['x-api-key', 'Content-Type'],
-  });
-
-  // Helper method to run middleware
-async function runMiddleware(req: NextRequest, res: NextResponse, fn: Function) {
-    return new Promise((resolve, reject) => {
-      fn(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        return resolve(result);
-      });
-    });
+function handleCors(req: NextRequest) {
+    const headers = new Headers();
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  
+    // Respond to preflight requests with 200 status
+    if (req.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 204, headers });
+    }
+  
+    return headers;
   }
 
 export const POST = async (req: NextRequest, res: NextResponse) => {
-    // Run CORS middleware
-    await runMiddleware(req, res, cors);
+    
+    const headers = handleCors(req);
 
     if (req.method === 'POST'){
         try {
