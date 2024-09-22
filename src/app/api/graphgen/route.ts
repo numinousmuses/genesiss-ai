@@ -1,26 +1,10 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
-import { Resource } from "sst";
 import Cors from 'cors';
 import { 
   verifyApiKey, 
-  validateImages, 
-  validateDocuments, 
-  generateUniqueID, 
-  searchMemory,  
-  extractKeyFromS3Url,
-  retrieveFromS3,
-  getFileExtensionFromBase64,
-  promptLLMWithConversation,
-  promptLLM,
-  searchInternetWithQueries,
-  addMessageToChat,
-  addToMemory
+  graphGenerationAgent
 } from '@/lib/utils';
-import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import {
-  ConverseCommandInput,
-} from "@aws-sdk/client-bedrock-runtime";
 // Initialize the CORS middleware
 const cors = Cors({
     methods: ['POST'],
@@ -46,12 +30,43 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     await runMiddleware(req, res, cors);
 
     if (req.method === 'POST') {
-        
+        try {
+    
+            const { ak, prompt, height, width } = await req.json();
+    
+            if (!ak || !prompt) {
+                return {
+                    statusCode: 400,
+                    body: JSON.stringify({ error: 'Missing required parameters' }),
+                }
+            }
+    
+            if(!await verifyApiKey(ak)){
+                return {
+                    statusCode: 401,
+                    body: JSON.stringify({ error: 'Unauthorized' }),
+                };
+            }
+    
+            const res = await graphGenerationAgent(prompt, height, width)
+    
+            return NextResponse.json({
+                statusCode: 200,
+                body: JSON.stringify({response: res}),
+            });
+    
+        } catch (error) {
+            console.error("GraphGen Endpoint error: " + JSON.stringify(error, null, 2))
+            return NextResponse.json({
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Internal Server Error' }),
+            })
+        }
     } else {
 
-        return {
+        return NextResponse.json({
             statusCode: 405,
             body: JSON.stringify({ error: 'Method Not Allowed' }),
-        };
+        });
     }
 }

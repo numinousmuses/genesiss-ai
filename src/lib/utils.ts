@@ -300,42 +300,6 @@ export interface GraphGenResponse {
     graphURL: string
 }
 
-export async function graphgen(event: APIGatewayProxyEvent){
-    try {
-        const body = JSON.parse(event.body);
-
-        let { ak, prompt, height, width } = body as GraphGenRequest;
-
-        if (!ak || !prompt) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            }
-        }
-
-        if(!await verifyApiKey(ak)){
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-
-        const res = await graphGenerationAgent(prompt, height, width)
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({response: res}),
-        };
-
-    } catch (error) {
-        console.error("GraphGen Endpoint error: " + JSON.stringify(error, null, 2))
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Internal Server Error' }),
-        }
-    }
-}
-
 
 // ██████╗░░█████╗░░█████╗░██╗░░░██╗░█████╗░░█████╗░███╗░░░███╗██████╗░
 // ██╔══██╗██╔══██╗██╔══██╗██║░░░██║██╔══██╗██╔══██╗████╗░████║██╔══██╗
