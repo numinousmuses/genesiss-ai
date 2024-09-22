@@ -350,45 +350,6 @@ export interface SchatResponse {
     response: string;
 }
 
-export async function schat(event){
-    try {
-        
-        const body = JSON.parse(event.body);
-
-        let { ak, prompt } = body as SchatRequest;
-
-        if (!ak || !prompt ) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            }
-        }
-
-        if(!await verifyApiKey(ak)){
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-
-        const response = await simpleChatAgent(prompt)
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ response: response }),
-        };
-
-
-    } catch (error) {
-        console.error("Schat Endpoint error: " + JSON.stringify(error, null, 2))
-        console.log("Schat Endpoint error: " + error)
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'This is the error' }),
-        }
-    }
-}
-
 
 // ██████╗░░█████╗░░█████╗░██╗░░░██╗░██████╗░███████╗███╗░░██╗
 // ██╔══██╗██╔══██╗██╔══██╗██║░░░██║██╔════╝░██╔════╝████╗░██║
