@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
 import { Resource, VectorClient } from "sst";
@@ -250,50 +251,6 @@ export interface InternetChatResponse {
     response: string
 }
 
-export async function ichat(event: APIGatewayProxyEvent){
-    try {
-        const body = JSON.parse(event.body);
-
-        let { ak, prompt, pro } = body as InternetChatRequest;
-
-        if (!ak || !prompt || !pro) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            }
-        }
-
-        if(!await verifyApiKey(ak)){
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-
-        let res: string = ''
-
-        if (pro) {
-            res = await proChatAgent(prompt)
-        } else if (!pro) {
-            res = await internetChatAgent(prompt)
-        }
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({response: res}),
-        };
-
-    } catch(error) {
-        console.error("Internet Chat Endpoint error: " + JSON.stringify(error, null, 2))
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Internal Server Error' }),
-        }
-    }
-
-
-}
-
 
 // ░█████╗░░█████╗░██████╗░███████╗  ███████╗███╗░░██╗██████╗░██████╗░░█████╗░██╗███╗░░██╗████████╗
 // ██╔══██╗██╔══██╗██╔══██╗██╔════╝  ██╔════╝████╗░██║██╔══██╗██╔══██╗██╔══██╗██║████╗░██║╚══██╔══╝
@@ -315,43 +272,6 @@ export interface SmartCodeExecResponse{
 export interface RanCode {
     code: string,
     stdout: string
-}
-
-export async function code(event: APIGatewayProxyEvent){
-    try {
-        const body = JSON.parse(event.body);
-
-        let { ak, prompt } = body as CodeRequest;
-
-        if (!ak || !prompt) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing required parameters' }),
-            }
-        }
-
-        if(!await verifyApiKey(ak)){
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Unauthorized' }),
-            };
-        }
-
-        const res = await smartCodeExecutionAgent(prompt)
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({response: res}),
-        };
-
-
-    } catch (error) {
-        console.error("Code Endpoint error: " + JSON.stringify(error, null, 2))
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Internal Server Error' }),
-        }
-    }
 }
 
 

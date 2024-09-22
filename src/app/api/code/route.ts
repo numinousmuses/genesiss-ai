@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import Cors from 'cors';
 import { 
   verifyApiKey, 
-  proChatAgent,
-  internetChatAgent
+  smartCodeExecutionAgent
 } from '@/lib/utils';
+
 // Initialize the CORS middleware
 const cors = Cors({
     methods: ['POST'],
@@ -31,44 +31,39 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     await runMiddleware(req, res, cors);
 
     if (req.method === 'POST') {
+        
+        let { ak, prompt } = await req.json();
 
-        const { ak, prompt, pro } = await req.json();
+        if (!ak || !prompt) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Missing required parameters' }),
+            }
+        }
+
+        if(!await verifyApiKey(ak)){
+            return {
+                statusCode: 401,
+                body: JSON.stringify({ error: 'Unauthorized' }),
+            };
+        }
 
         try {
-            if (!ak || !prompt || !pro) {
-                return {
-                    statusCode: 400,
-                    body: JSON.stringify({ error: 'Missing required parameters' }),
-                }
-            }
-    
-            if(!await verifyApiKey(ak)){
-                return {
-                    statusCode: 401,
-                    body: JSON.stringify({ error: 'Unauthorized' }),
-                };
-            }
-    
-            let res: string = ''
-    
-            if (pro) {
-                res = await proChatAgent(prompt)
-            } else if (!pro) {
-                res = await internetChatAgent(prompt)
-            }
-    
-            return {
+            const res = await smartCodeExecutionAgent(prompt)
+
+            return NextResponse.json({
                 statusCode: 200,
                 body: JSON.stringify({response: res}),
-            };
-        } catch (error) {
+            });
 
-            console.error("Internet Chat Endpoint error: " + JSON.stringify(error, null, 2))
+        } catch (error) {
+            console.error("Code Endpoint error: " + JSON.stringify(error, null, 2))
             return NextResponse.json({
                 statusCode: 400,
                 body: JSON.stringify({ error: 'Internal Server Error' }),
             })
         }
+
     } else {
 
         return NextResponse.json({
